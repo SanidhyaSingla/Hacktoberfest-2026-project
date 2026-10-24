@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 LogicFlow AI STEM Engine
 
-## Getting Started
+## 💡 What is LogicFlow AI?
 
-First, run the development server:
+**LogicFlow AI** is a dynamic, cross-disciplinary STEM engine built to transform static homework problems, experimental lab data, and graph plots into an interactive engineering workspace.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Instead of acting like a standard text-box chatbot that spits out static answers, LogicFlow parses complex math, physics, and chemistry problems into structured logic steps, cross-references lab observation tables with graph data for error detection, and instantly spins up live, client-side simulation workspaces with tunable parameters.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔥 Why LogicFlow Beats ChatGPT or Standard Gemini
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Standard LLMs give you a dead block of text and stop there. If you want to change a variable or check a lab variation, you have to prompt them all over again. LogicFlow treats problem-solving like a true engineering workstation:
 
-## Learn More
+* **⚡ Interactive "What-If" Simulation Engine:** It extracts tunable variables and raw mathematical expressions from any problem domain. Dragging the live range sliders recalculates final values instantly on the client side without hammering the API again.
+* **🧪 Automated Experimental Verification & Discrepancies:** Drop your lab observation tables and hand-drawn graph plots side-by-side. The engine cross-references recorded data against plotted characteristics to flag scaling errors, intercept mismatches, or curve deviations.
+* **🗺️ Structural Workflow Mapping:** Every problem automatically compiles into a clean, interactive **Mermaid.js logic flowchart** mapping out the exact path from given variables to final derivations.
+* **📐 Pristine Mathematical Rendering:** Uses direct **KaTeX** integration so all equations, variables, and scientific notation render cleanly instead of displaying messy raw text.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Core Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Multi-Source Ingestion:** Type text problems, paste code/data, or drop multiple screenshots and lab graphs directly via clipboard or file uploads.
+2. **Discrepancy & Error Engine:** Pinpoints experimental lab errors between recorded table values and graphical representations.
+3. **Dynamic Client-Side Evaluator:** Safely parses and evaluates parametric formulas in real-time across physics, electrical engineering, chemistry, and mathematics.
+4. **Responsive Glassmorphism UI:** Built with Tailwind CSS and Next.js App Router for a lightning-fast dark-mode developer experience.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧰 Tech Stack & Resources
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* **Framework:** [Next.js](https://nextjs.org/) (App Router, Server Actions)
+* **AI Model:** Google GenAI SDK (`gemma-4-26b-a4b-it`) for structured JSON reasoning.
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+* **Diagramming:** [Mermaid.js](https://mermaid.js.org/) for logic flowcharts.
+* **Math Rendering:** [KaTeX](https://katex.org/) for high-performance LaTeX typesetting.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have **Node.js** installed on your machine along with a valid Google Gemini API Key.
+
+### Installation & Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/logicflow-ai/logicflow-ai.git
+   cd logicflow-ai
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure your environment variables:
+   Create a `.env.local` file in the root directory of your project and add your Gemini API key:
+   ```env
+   GEMINI_API_KEY=your_google_gemini_api_key_here
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to experience the STEM engine live.
+
+---
+
+## 📄 License
+
+This project is open-source and available under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+  Built with power and precision for STEM students and developers.
+</div>
