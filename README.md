@@ -72,6 +72,32 @@ Make sure you have **Node.js** installed on your machine along with a valid Goog
 
 ---
 
+## 🏆 Hackathon Details & Track
+
+* **Track:** Uses of Gemma 4
+
+## 🌍 How it Fits OpenSTEM
+* **OpenSTEM Alignment:** LogicFlow AI directly supports the OpenSTEM mission by transforming static, unyielding educational materials—such as textbook problems, messy lab observation tables, and complex code snippets—into dynamic, interactive engineering simulations. Instead of passive reading, students and researchers can instantly visualize code architecture via Mermaid.js, run real-time parameter what-if simulations, and verify experimental lab data through automated discrepancy detection powered by Gemma 4.
+
+## 👥 Team Members
+* **Developer:** Sanidhya Singla (Individual Entry)
+
+---
+
+## 📸 App Walkthrough & Screenshots
+
+### Module A: Code Logic Visualizer
+| Landing & Editor View | Mermaid Flowchart Output | Intelligent Breakdown |
+| :---: | :---: | :---: |
+| ![Landing View](docs/A1.png) | ![Flowchart Output](docs/A2.png) | ![Breakdown](docs/A3.png) |
+
+### Module B: STEM & Science Engine
+| Problem Solver & Simulation | Discrepancy & Error Checks |
+| :---: | :---: |
+| ![STEM Engine](docs/B1.png) | ![Discrepancies](docs/B2.png) |
+
+---
+
 ## 📄 License
 
 This project is open-source and available under the [MIT License](LICENSE).

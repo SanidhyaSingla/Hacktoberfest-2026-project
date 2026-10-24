@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <!-- Background Gradient (Indigo to Purple) -->
+    <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#D946EF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dark Squircle Outer Base -->
+  <rect x="1" y="1" width="30" height="30" rx="9" fill="#020617" stroke="#1E293B" stroke-width="1.5" />
+
+  <!-- Inner Glowing Squircle -->
+  <rect x="3" y="3" width="26" height="26" rx="7" fill="url(#bgGlow)" opacity="0.9" />
+
+  <!-- Stylized STEM / Logic Bolt Emblem -->
+  <path d="M18 6L10 17H16L14 26L22 15H16L18 6Z" fill="#FFFFFF" />
+</svg>
