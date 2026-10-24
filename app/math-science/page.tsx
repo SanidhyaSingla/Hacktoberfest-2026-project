@@ -1,17 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import MermaidChart from '@/components/MermaidChart';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
-// Clean math renderer using KaTeX directly
 const MathText = ({ text }: { text: string }) => {
   if (!text) return null;
-
   const parts = text.split(/(\$[^$]+\$)/g);
-
   return (
     <span>
       {parts.map((part, i) => {
@@ -30,7 +27,7 @@ const MathText = ({ text }: { text: string }) => {
   );
 };
 
-const DEFAULT_PROBLEM = `A car accelerates from rest at 3 m/s² for 5 seconds. Calculate its final velocity and total distance traveled.`;
+const DEFAULT_PROBLEM = `A copper wire of 10^-6 m2 area of cross section, carries a current of 2 A. If the number of electrons per cubic meter is 8 × 10^28, calculate the current density and average drift velocity.`;
 
 export default function MathSciencePage() {
   const [problem, setProblem] = useState(DEFAULT_PROBLEM);
@@ -39,15 +36,27 @@ export default function MathSciencePage() {
   const [steps, setSteps] = useState<any[]>([]);
   const [variables, setVariables] = useState<any[]>([]);
   const [corrections, setCorrections] = useState<any[]>([]);
-  const [idealCurvePoints, setIdealCurvePoints] = useState<any[]>([]);
-  const [selectedGraphIndex, setSelectedGraphIndex] = useState<number>(0);
+  const [simulationParams, setSimulationParams] = useState<any[]>([]);
+  const [simulationOutputs, setSimulationOutputs] = useState<any[]>([]);
+  const [simValues, setSimValues] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
 
-  // Multi-image state array and ref
   const [images, setImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle multiple file selections with type safety for FileReader
+  // Safely initialize slider states and sanitize extreme bounds
+  useEffect(() => {
+    if (simulationParams && simulationParams.length > 0) {
+      const initialValues: Record<string, number> = {};
+      simulationParams.forEach((param) => {
+        let def = Number(param.default);
+        if (isNaN(def)) def = 1;
+        initialValues[param.key] = def;
+      });
+      setSimValues(initialValues);
+    }
+  }, [simulationParams]);
+
   const handleFilesInput = (files: FileList | File[]) => {
     Array.from(files).forEach((file) => {
       if (file.type.indexOf('image') !== -1) {
@@ -63,7 +72,6 @@ export default function MathSciencePage() {
     });
   };
 
-  // Handle clipboard pasting for multiple/single images
   const handlePaste = (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     const pastedFiles: File[] = [];
@@ -80,9 +88,6 @@ export default function MathSciencePage() {
 
   const removeImage = (indexToRemove: number) => {
     setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-    if (selectedGraphIndex >= images.length - 1) {
-      setSelectedGraphIndex(Math.max(0, images.length - 2));
-    }
   };
 
   const handleSolve = async () => {
@@ -96,12 +101,13 @@ export default function MathSciencePage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.mermaidCode) setDiagram(data.mermaidCode);
-        if (data.overview) setOverview(data.overview);
-        if (data.steps) setSteps(data.steps);
-        if (data.variables) setVariables(data.variables);
-        if (data.corrections) setCorrections(data.corrections);
-        if (data.idealCurvePoints) setIdealCurvePoints(data.idealCurvePoints);
+        setDiagram(data.mermaidCode || '');
+        setOverview(data.overview || '');
+        setSteps(data.steps || []);
+        setVariables(data.variables || []);
+        setCorrections(data.corrections || []);
+        setSimulationParams(data.simulationParams || []);
+        setSimulationOutputs(data.simulationOutputs || []);
       } else {
         console.error(data.error);
       }
@@ -112,10 +118,21 @@ export default function MathSciencePage() {
     }
   };
 
-  // SVG Polyline Path generator for ideal curve overlay
-  const curveSvgPath = idealCurvePoints.length > 0
-    ? idealCurvePoints.reduce((acc, pt, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`, '')
-    : '';
+  const evaluateExpression = (expr: string) => {
+    try {
+      let cleanExpr = expr.replace(/\^/g, '**');
+      const keys = Object.keys(simValues);
+      const values = Object.values(simValues);
+      if (keys.length === 0) return 'N/A';
+      
+      // eslint-disable-next-line no-new-func
+      const evalFn = new Function(...keys, `return ${cleanExpr};`);
+      const result = evalFn(...values);
+      return isNaN(result) ? 'N/A' : Number(result).toExponential(3);
+    } catch (e) {
+      return 'Calc Error';
+    }
+  };
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col p-6 font-sans">
@@ -136,11 +153,10 @@ export default function MathSciencePage() {
           disabled={loading}
           className="bg-purple-600 hover:bg-purple-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition disabled:opacity-50 shadow-lg shadow-purple-500/20"
         >
-          {loading ? 'Analyzing Sources...' : 'Solve & Cross-Reference'}
+          {loading ? 'Analyzing Sources...' : 'Solve Problem'}
         </button>
       </header>
 
-      {/* Input & Logic Map */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="flex flex-col bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl relative">
           <div className="flex justify-between items-center mb-2">
@@ -173,15 +189,10 @@ export default function MathSciencePage() {
             placeholder="Type context, paste text, or paste multiple screenshots/graphs here..."
           />
 
-          {/* Image Upload Previews */}
           {images.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {images.map((img, idx) => (
-                <div 
-                  key={idx} 
-                  onClick={() => setSelectedGraphIndex(idx)}
-                  className={`relative cursor-pointer rounded-lg border p-0.5 transition ${selectedGraphIndex === idx ? 'border-purple-500 ring-2 ring-purple-500/40' : 'border-slate-700 opacity-70 hover:opacity-100'}`}
-                >
+                <div key={idx} className="relative rounded-lg border border-slate-700 p-0.5">
                   <img src={img} alt={`Upload ${idx + 1}`} className="h-16 w-16 rounded-md object-cover" />
                   <button 
                     onClick={(e) => {
@@ -208,77 +219,90 @@ export default function MathSciencePage() {
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center border border-dashed border-slate-800 rounded-lg text-slate-500 text-sm min-h-[300px]">
-              Click "Solve & Cross-Reference" to visualize solution steps
+              Click "Solve Problem" to visualize solution steps
             </div>
           )}
         </div>
       </div>
 
-      {/* SVG Ideal Curve Overlay Card */}
-      {images.length > 0 && idealCurvePoints.length > 0 && (
-        <div className="bg-slate-900 border border-purple-500/40 rounded-xl p-6 shadow-2xl mb-6">
+      {simulationParams.length > 0 && simulationOutputs.length > 0 && (
+        <div className="bg-slate-900 border border-indigo-500/40 rounded-xl p-6 shadow-2xl mb-6 backdrop-blur-md">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
-                🎯 Corrected Ideal Curve Overlay
+              <h3 className="text-lg font-bold text-indigo-400 flex items-center gap-2">
+                ⚡ Interactive "What-If" Simulation Engine
               </h3>
               <p className="text-xs text-slate-400">
-                Green glowing line represents the exact plot derived from your experimental table data.
+                Adjust variables live on the client side to simulate calculation shifts instantly.
               </p>
             </div>
-            <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full">
-              Ideal Trace Active
+            <span className="text-xs font-mono text-indigo-400 bg-indigo-950/60 border border-indigo-500/30 px-3 py-1 rounded-full">
+              Live Engine Active
             </span>
           </div>
 
-          <div className="relative inline-block w-full max-w-3xl overflow-hidden rounded-xl border border-slate-700 bg-black/60 shadow-inner">
-            <img 
-              src={images[selectedGraphIndex] || images[0]} 
-              alt="Uploaded Graph" 
-              className="w-full h-auto object-contain max-h-[500px]"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+              {simulationParams.map((param) => {
+                // Sanitize min/max bounds so sliders never break on extreme numbers
+                let rawMin = Number(param.min);
+                let rawMax = Number(param.max);
+                let currentVal = simValues[param.key] ?? Number(param.default) ?? 1;
 
-            {/* SVG Overlay */}
-            <svg 
-              className="absolute inset-0 w-full h-full pointer-events-none" 
-              viewBox="0 0 100 100" 
-              preserveAspectRatio="none"
-            >
-              {/* Glowing outer shadow line */}
-              <path 
-                d={curveSvgPath} 
-                fill="none" 
-                stroke="#10b981" 
-                strokeWidth="2.5" 
-                strokeOpacity="0.4"
-                className="filter drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]"
-              />
-              {/* Main sharp line */}
-              <path 
-                d={curveSvgPath} 
-                fill="none" 
-                stroke="#34d399" 
-                strokeWidth="1.2" 
-                strokeDasharray="2 1"
-              />
+                if (isNaN(rawMin) || isNaN(rawMax) || rawMin >= rawMax) {
+                  rawMin = 0;
+                  rawMax = currentVal > 0 ? currentVal * 2 : 100;
+                }
+                // If bounds are ridiculously wide (scientific notation range), create a safe proportional range around currentVal
+                if (rawMax - rawMin > 1e6 || rawMax > 1e6) {
+                  rawMin = 0;
+                  rawMax = currentVal * 2 || 100;
+                }
+                const step = (rawMax - rawMin) / 100 || 1;
 
-              {/* Individual Target Plot Points */}
-              {idealCurvePoints.map((pt, i) => (
-                <g key={i}>
-                  <circle cx={pt.x} cy={pt.y} r="1.8" fill="#34d399" className="animate-pulse" />
-                  <circle cx={pt.x} cy={pt.y} r="0.8" fill="#ffffff" />
-                </g>
-              ))}
-            </svg>
+                return (
+                  <div key={param.key} className="space-y-1">
+                    <div className="flex justify-between text-xs font-mono">
+                      <span className="text-slate-300"><MathText text={param.label} /></span>
+                      <span className="text-indigo-400 font-bold">
+                        {typeof currentVal === 'number' && currentVal > 1e4 ? currentVal.toExponential(2) : currentVal}
+                      </span>
+                    </div>
+                    <input 
+                      type="range"
+                      min={rawMin}
+                      max={rawMax}
+                      step={step}
+                      value={currentVal}
+                      onChange={(e) => setSimValues({ ...simValues, [param.key]: parseFloat(e.target.value) })}
+                      className="w-full accent-indigo-500 cursor-pointer bg-slate-800 h-2 rounded-lg"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-4 flex flex-col justify-center items-center text-center">
+              <span className="text-xs uppercase tracking-wider font-mono text-indigo-300 mb-3">Real-Time Simulation Output</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {simulationOutputs.map((out, idx) => (
+                  <div key={idx} className="bg-slate-950/80 p-3 rounded-lg border border-indigo-500/20">
+                    <span className="text-xs text-slate-400 block"><MathText text={out.label} /></span>
+                    <span className="text-lg font-bold text-emerald-400 font-mono">
+                      {evaluateExpression(out.expression)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Breakdown: Overview, Corrections, Variables & Steps */}
       {(overview || corrections.length > 0 || steps.length > 0 || variables.length > 0) && (
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
           <h3 className="text-lg font-bold text-purple-400 flex items-center gap-2">
-            🧪 Problem Breakdown & Graph Analysis
+            🧪 Problem Breakdown & Analysis
           </h3>
 
           {overview && (
@@ -290,22 +314,27 @@ export default function MathSciencePage() {
             </div>
           )}
 
-          {/* Graph Corrections & Discrepancies */}
           {corrections.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">⚠️ Graph & Data Discrepancies Detected</h4>
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-6 backdrop-blur-md">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-amber-200">Experimental Discrepancies</h3>
+                </div>
+              </div>
+
               <div className="space-y-3">
-                {corrections.map((c: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-amber-950/20 rounded-lg border border-amber-500/30 flex flex-col gap-1">
-                    <span className="font-semibold text-amber-400 text-xs">
-                      Location: <MathText text={c.location} />
+                {corrections.map((item: any, index: number) => (
+                  <div key={index} className="p-4 rounded-lg bg-black/40 border border-amber-500/20">
+                    <span className="text-xs font-mono uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-1 rounded">
+                      <MathText text={item.location} />
                     </span>
-                    <p className="text-slate-300 text-sm">
-                      <strong className="text-white">Issue:</strong> <MathText text={c.issue} />
-                    </p>
-                    <p className="text-slate-300 text-sm">
-                      <strong className="text-emerald-400">Fix:</strong> <MathText text={c.fix} />
-                    </p>
+                    <p className="mt-2 text-sm text-zinc-300"><strong className="text-white">Issue:</strong> <MathText text={item.issue} /></p>
+                    <p className="mt-1 text-sm text-emerald-400"><strong className="text-white">Recommended Fix:</strong> <MathText text={item.fix} /></p>
                   </div>
                 ))}
               </div>
