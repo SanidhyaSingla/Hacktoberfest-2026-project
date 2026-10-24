@@ -86,15 +86,20 @@ Make sure you have **Node.js** installed on your machine along with a valid Goog
 
 ## 📸 App Walkthrough & Screenshots
 
+| Landing Page |
+| :--: |
+| ![Landing](docs/Landing.png) |
+
 ### Module A: Code Logic Visualizer
-| Landing & Editor View | Mermaid Flowchart Output | Intelligent Breakdown |
-| :---: | :---: | :---: |
-| ![Landing View](docs/A1.png) | ![Flowchart Output](docs/A2.png) | ![Breakdown](docs/A3.png) |
+
+| Mermaid Flowchart Output | Intelligent Breakdown |
+| :---: | :---: |
+| ![Flowchart Output](docs/B1.png) | ![Breakdown](docs/B2.png) |
 
 ### Module B: STEM & Science Engine
-| Problem Solver & Simulation | Discrepancy & Error Checks |
-| :---: | :---: |
-| ![STEM Engine](docs/B1.png) | ![Discrepancies](docs/B2.png) |
+| Flowchart Of The Problem | Problem Solver & Simulation | Discrepancy & Error Checks |
+| :---: | :---: | :---: |
+| ![Flowchart](docs/A1.png) | ![STEM Engine](docs/A2.png) | ![Discrepancies](docs/A3.png) |
 
 ---
 
