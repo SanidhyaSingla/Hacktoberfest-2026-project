@@ -74,7 +74,7 @@ Make sure you have **Node.js** installed on your machine along with a valid Goog
 
 ## 🏆 Hackathon Details & Track
 
-* **Track:** Uses of Gemma 4
+* **Track:** Uses of Gemma 4 & Best Use of An Open Weight LLM (>10b)
 
 ## 🌍 How it Fits OpenSTEM
 * **OpenSTEM Alignment:** LogicFlow AI directly supports the OpenSTEM mission by transforming static, unyielding educational materials—such as textbook problems, messy lab observation tables, and complex code snippets—into dynamic, interactive engineering simulations. Instead of passive reading, students and researchers can instantly visualize code architecture via Mermaid.js, run real-time parameter what-if simulations, and verify experimental lab data through automated discrepancy detection powered by Gemma 4.
