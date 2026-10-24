@@ -1,45 +1,56 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenAI } from '@google/genai';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
   try {
     const { code } = await req.json();
 
-    const prompt = `System: Analyze the provided source code (automatically detect its programming language) and convert its logic into a valid Mermaid.js flowchart.
+    const systemInstruction = `You are LogicFlow AI. Analyze the user's code and provide:
+1. A valid Mermaid.js flowchart.
+2. A clear explanation of how the code works.
+3. Key highlights explaining complex or tricky concepts/logic in the code.
 
 CRITICAL MERMAID SYNTAX RULES:
-1. Begin directly with "graph TD".
-2. Node labels MUST wrap text in double quotes inside shapes (e.g., NodeA["x == 0?"]).
-3. Node IDs must be simple alphanumeric strings without spaces.
-4. Do NOT wrap output in markdown codeblocks (no \`\`\`mermaid).
-5. Output ONLY raw Mermaid syntax without commentary.
+- Begin directly with "graph TD".
+- Node labels MUST wrap text in double quotes inside shapes (e.g., NodeA["x == 0?"]).
+- Simple alphanumeric node IDs without spaces.
+- Do NOT wrap the mermaid string in code blocks.
 
-Code to convert:
-${code}
-`;
+Respond EXCLUSIVELY in valid raw JSON with this exact structure:
+{
+  "mermaidCode": "graph TD...",
+  "overview": "Brief high-level summary of what the code does...",
+  "keyHighlights": [
+    { "title": "Concept/Function Name", "explanation": "Detailed breakdown..." }
+  ]
+}`;
 
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gemma4:12b',
-        prompt: prompt,
-        stream: false,
-      }),
+    const response = await ai.models.generateContent({
+      model: 'gemma-4-26b-a4b-it',
+      contents: `Code to analyze:\n${code}`,
+      config: {
+        systemInstruction,
+        responseMimeType: 'application/json',
+      },
     });
 
-    const data = await response.json();
-    let mermaidCode = data.response ? data.response.trim() : '';
+    const rawText = response.text ? response.text.trim() : '{}';
+    const parsedData = JSON.parse(rawText);
 
-    mermaidCode = mermaidCode
-      .replace(/```mermaid/g, '')
-      .replace(/```/g, '')
-      .trim();
+    if (parsedData.mermaidCode) {
+      parsedData.mermaidCode = parsedData.mermaidCode
+        .replace(/```mermaid/g, '')
+        .replace(/```/g, '')
+        .trim();
+    }
 
-    return NextResponse.json({ mermaidCode });
+    return NextResponse.json(parsedData);
   } catch (error) {
-    console.error('Ollama connection error:', error);
+    console.error('Gemini API connection error:', error);
     return NextResponse.json(
-      { error: 'Failed to connect to local Gemma instance' },
+      { error: 'Failed to analyze code' },
       { status: 500 }
     );
   }
